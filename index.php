@@ -29,7 +29,7 @@ require_once 'config.php';
 require_once 'classes/Core.php';
 
 $app = new Application();
-$app->run(isset($_GET['action']) ? $_GET['action'] : 'main');
+$app->run(isset($_GET['action']) ? $_GET['action'] : 'index');
 
 printf("<!-- %f -->", getMicrotime() - $start_time);
 
