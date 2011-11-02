@@ -1,7 +1,8 @@
 <?
 
-require WWW_ROOT . '/classes/Db.php';
-require WWW_ROOT . '/classes/ViewsUtils.php';
+require 'Db.php';
+require 'Model.php';
+require 'ViewsUtils.php';
 
 /**
  *  $set = new ArraySet(array("a"=>1,"b"=>2));
@@ -29,26 +30,9 @@ class ArraySet {
 	
 }
 
-class Model {
-	
-	protected $db;
-	
-	function __construct($db) {
-		$this->db = $db;
-		if(method_exists($this, 'onInit')) {
-			$this->onInit();
-		}		
-	}
-	
-	function query($sql){
-		return $this->db->query($sql);
-	}
-	
-}
-
 class Application {
 	
-	function run($action = 'main', $layout = 'default') {	
+	function run($action = 'main', $layout = 'layout') {	
 		$db = new Db(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);		
 		if(substr($action, -1) == '/') { // remove last slash if exists
 			$action = substr($action, 0, -1);
@@ -56,7 +40,7 @@ class Application {
 		$action = str_replace('/', '_', $action);				
 		$controller = WWW_ROOT . '/controllers/' . $action . '.php';
 		
-		if(strcmp(realpath($controller), $_SERVER['DOCUMENT_ROOT'])) {		
+		if(strcmp(realpath($controller), $_SERVER['DOCUMENT_WWW_ROOT'])) {		
 					
 			$view = new View($action, $layout);
 			
@@ -95,13 +79,20 @@ class View {
 		$this->layout = sprintf(WWW_ROOT . '/views/%s.php', $layout);
 	}
 	
-	public function display() {		
-		extract($this->vars);		
-		if($this->layout && file_exists($this->layout)) {					
+	public function display() {
+		extract($this->vars);
+		if($this->layout && file_exists($this->layout)) {
+			$layout = $this->action . '.php';					
 			include $this->layout;
 		} else {			
 			include(WWW_ROOT . '/views/' . $this->action . '.php');
 		}
+	}
+	
+	public function getHtml() {
+		ob_start();
+		$this->display();		
+		return ob_get_clean();		
 	}
 	
 	public function set($name, $value) {
